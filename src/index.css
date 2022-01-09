@@ -5,6 +5,10 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  height: 100vh;
+  background-image: url('../public/coins.jpg');
+  background-size: cover;
+  background-position: center;
 }
 
 code {
