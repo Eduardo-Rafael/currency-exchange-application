@@ -128,7 +128,7 @@ class CurrencyConverter extends React.Component{
       <React.Fragment>
         <h3 className="text-center my-2">{this.state.amount} {this.state.baseCurrency} to {this.state.secondaryCurrency} - Convert {this.state.baseCurrencyFullName} to {this.state.secondaryCurrencyFullName}</h3>
         <h3 className="text-center">Currency-Calculator</h3>
-        <div className="main-content border border-danger overflow-auto p-3">
+        <div className="main-content border overflow-auto p-3 shadow bg-body rounded">
           <h4 className="text-center my-3">Convert</h4>
           <form className="container-fluid" onSubmit={this.submitHandle} >
             <div className="row my-3 text-light justify-content-center">

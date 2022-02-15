@@ -4,6 +4,7 @@ import NavigationBar from './NavandFooter';
 import React from 'react';
 import {BrowserRouter as Router, Route, Switch} from "react-router-dom";
 import CurrencyConverter from './CurrencyConverter';
+import ExchangeRateList from './ExchangeRateList';
 
 
 
@@ -13,7 +14,7 @@ function App() {
       <NavigationBar />
       <Switch>
         <Route path="/currency-converter" exact component={CurrencyConverter} />
-        <Route path="/exchange-rate-list"/>
+        <Route path="/exchange-rate-list" exact component={ExchangeRateList}/>
       </Switch>
     </Router>
   );
