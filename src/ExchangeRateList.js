@@ -12,6 +12,8 @@ class ExchangeRateList extends React.Component
       currencyNames : {},
       rates : {}
     };
+
+    this.changeHandle = this.changeHandle.bind(this);
   }
 
   componentDidMount()
@@ -64,6 +66,22 @@ class ExchangeRateList extends React.Component
     }
     return arrayOfRows;
   }
+
+  changeHandle(event)
+  {
+    const {value} = event.target;
+    const newrequest = fetch(`https://api.frankfurter.app/latest?from=${value}`);
+    newrequest.then((response)=>{
+      if(response.ok)
+        return response.json();
+    }).then((data)=>{
+      this.setState({
+        baseCurrency : value,
+        rates : data.rates,
+        currencyFullName: this.state.currencyNames[value]
+      });
+    });
+  }
   render()
   {
     return (
@@ -78,7 +96,7 @@ class ExchangeRateList extends React.Component
               <thead>
                 <tr>
                   <th>
-                    <select name="currencies" value={this.state.baseCurrency} >
+                    <select name="currencies" value={this.state.baseCurrency} onChange={this.changeHandle} >
                     {this.listCurrencyNames()}
                     </select>
                   </th>
