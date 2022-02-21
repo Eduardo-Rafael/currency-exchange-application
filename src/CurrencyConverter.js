@@ -1,5 +1,6 @@
 import React from "react";
 import './CurrencyConverter.css'
+import MyChart from "./Chart";
 
 class CurrencyConverter extends React.Component{
   constructor(props){
@@ -12,12 +13,36 @@ class CurrencyConverter extends React.Component{
       secondaryCurrencyFullName: 'Euros',
       amount: this.props.amount.toFixed(2),
       exchangeRate: 0,
-      currencyNames: {}
+      currencyNames: {},
+      currentDate : new Date().toISOString().split('T')[0],
+      historicalRates : {}
     };
 
     this.changeHandle = this.changeHandle.bind(this);
     this.submitHandle = this.submitHandle.bind(this);
     this.clickHandle = this.clickHandle.bind(this);
+  }
+
+  getHistoricalRates(baseCurrency , secondaryCurrency)
+  {
+    const request = fetch(`https://api.frankfurter.app/${new Date((new Date).getTime() - (30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0]}..${this.state.currentDate}?from=${baseCurrency}&to=${secondaryCurrency}`);
+    request.then((response)=>{
+      if(response.ok)
+        return response.json();
+    }).then((data)=>{
+      this.setState({
+        historicalRates : data.rates
+      });
+      console.log(data.rates);
+    });
+  }
+  getChartLabels()
+  {
+    return Object.keys(this.state.historicalRates);
+  }
+  getChartData()
+  {
+    return Object.values(this.state.historicalRates).map((rate)=> rate[this.state.secondaryCurrency]);
   }
   componentDidMount(){
 
@@ -41,6 +66,8 @@ class CurrencyConverter extends React.Component{
         currencyNames: data
       });
     });
+
+    this.getHistoricalRates(this.state.baseCurrency , this.state.secondaryCurrency);
 
   }
 
@@ -98,6 +125,7 @@ class CurrencyConverter extends React.Component{
         const temporalCurrency = this.state.baseCurrency;
         const temporalCurrencyFullName = this.state.baseCurrencyFullName;
         const temporalExchangeRate = 1 / this.state.exchangeRate;
+        this.getHistoricalRates(this.state.secondaryCurrency, this.state.baseCurrency);
         this.setState({
           baseCurrency : this.state.secondaryCurrency,
           baseCurrencyFullName : this.state.secondaryCurrencyFullName,
@@ -129,9 +157,9 @@ class CurrencyConverter extends React.Component{
         <h3 className="text-center my-2">{this.state.amount} {this.state.baseCurrency} to {this.state.secondaryCurrency} - Convert {this.state.baseCurrencyFullName} to {this.state.secondaryCurrencyFullName}</h3>
         <h3 className="text-center">Currency-Calculator</h3>
         <div className="main-content border overflow-auto p-3 shadow bg-body rounded">
-          <h4 className="text-center my-3">Convert</h4>
+          <h4 className="text-center my-2">Convert</h4>
           <form className="container-fluid" onSubmit={this.submitHandle} >
-            <div className="row my-3 text-light justify-content-center">
+            <div className="row text-light justify-content-center">
               <div className="col">
                 <label className="text-body">
                   Amount<br/>
@@ -164,7 +192,7 @@ class CurrencyConverter extends React.Component{
 
             </div>
             <br/><br/>
-            <div className="row my-3 text-body fs-4 fw-bold">
+            <div className="row text-body fs-5 fw-bold">
               <div className="col-12">
                 <div className="mb-3 text-center">
                   {this.state.amount} {this.state.baseCurrencyFullName} = <br/>
@@ -176,11 +204,8 @@ class CurrencyConverter extends React.Component{
                   1 {this.state.secondaryCurrency} = {1 / this.state.exchangeRate} {this.state.baseCurrency}
                 </div>
               </div>
-
-              {/* <div className="col-12 col-md-6 align-self-center mt-3 mt-md-0">
-                <button type="button" className="btn btn-warning" name="convert" >Convert</button>
-              </div> */}
             </div>
+            <MyChart labels={this.getChartLabels()} data={this.getChartData()} base={this.state.baseCurrency} quote={this.state.secondaryCurrency} />
           </form>
         </div>
       </React.Fragment>
