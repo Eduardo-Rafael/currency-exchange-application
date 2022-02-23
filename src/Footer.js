@@ -1,7 +1,7 @@
 import './Footer.css'
 const Footer = () => {
   return(
-    <footer className="border py-3 text-center">
+    <footer className="py-3 mt-5 text-center">
       <div className="container">
         <h3>Eduardo Carranza</h3>
         <h5 className='my-3'>I'am a professional web developer from Miami</h5>

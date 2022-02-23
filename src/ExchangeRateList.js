@@ -85,13 +85,13 @@ class ExchangeRateList extends React.Component
   render()
   {
     return (
-      <React.Fragment>
+      <section className="container">
         <h3 className="text-center my-2">
           {this.state.currencyFullName} EXCHANGE RATES TABLE
         </h3>
-        <div className="main-content border overflow-auto p-3 shadow bg-body rounded">
+        <div className="border p-3 shadow bg-body rounded">
           <h4 className="text-center my-3" >Live Exchange Rates</h4>
-          <form className="container-fluid" >
+          <form>
             <table className="table table-striped table-light" >
               <thead>
                 <tr>
@@ -110,7 +110,7 @@ class ExchangeRateList extends React.Component
             </table>
           </form>
         </div>
-      </React.Fragment>
+      </section>
     );
   }
 }
