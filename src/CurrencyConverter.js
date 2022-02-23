@@ -1,5 +1,6 @@
 import React from "react";
 import './CurrencyConverter.css'
+import Chart from 'chart.js/auto';
 
 class CurrencyConverter extends React.Component{
   constructor(props){
@@ -12,12 +13,15 @@ class CurrencyConverter extends React.Component{
       secondaryCurrencyFullName: 'Euros',
       amount: this.props.amount.toFixed(2),
       exchangeRate: 0,
-      currencyNames: {}
+      currencyNames: {},
+      currentDate: new Date().toISOString().split('T')[0]
     };
 
     this.changeHandle = this.changeHandle.bind(this);
     this.submitHandle = this.submitHandle.bind(this);
     this.clickHandle = this.clickHandle.bind(this);
+
+    this.chartRef = React.createRef();
   }
   componentDidMount(){
 
@@ -29,7 +33,6 @@ class CurrencyConverter extends React.Component{
         this.setState({
           exchangeRate : data.rates[this.state.secondaryCurrency]
         });
-        console.log(`Exchange Rate: ${this.state.exchangeRate}`);
     });
 
     const currenciesRequest = fetch('https://api.frankfurter.app/currencies');
@@ -41,6 +44,8 @@ class CurrencyConverter extends React.Component{
         currencyNames: data
       });
     });
+
+    this.getHistoricalRates(this.state.baseCurrency, this.state.secondaryCurrency);
 
   }
 
@@ -66,6 +71,7 @@ class CurrencyConverter extends React.Component{
             exchangeRate : data.rates[this.state.secondaryCurrency]
           });
         });
+        this.getHistoricalRates(value, this.state.secondaryCurrency);
         break;
       case "secondaryCurrency" :
         const request1 = fetch(`https://api.frankfurter.app/latest?from=${this.state.baseCurrency}&to=${value}&amount=${1}`);
@@ -79,25 +85,25 @@ class CurrencyConverter extends React.Component{
             exchangeRate : data.rates[value]
           });
         });
+        this.getHistoricalRates(this.state.baseCurrency, value);
         break;
       default :
         this.setState({
           [name] : value
         });
-        console.log(`The amount has been changed to ${this.state.amount}`);
         break;
     }
   }
 
   clickHandle(event)
   {
-    console.log("I am on it");
     switch(event.target.name)
     {
       case "swap" :
         const temporalCurrency = this.state.baseCurrency;
         const temporalCurrencyFullName = this.state.baseCurrencyFullName;
         const temporalExchangeRate = 1 / this.state.exchangeRate;
+        this.getHistoricalRates(this.state.secondaryCurrency, this.state.baseCurrency);
         this.setState({
           baseCurrency : this.state.secondaryCurrency,
           baseCurrencyFullName : this.state.secondaryCurrencyFullName,
@@ -123,6 +129,54 @@ class CurrencyConverter extends React.Component{
     }
     return arrayOfcurrencyNames;
   }
+  getHistoricalRates(baseCurrency, secondaryCurrency)
+  {
+    const request = fetch(`https://api.frankfurter.app/${new Date((new Date).getTime() - (30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0]}..${this.state.currentDate}?from=${baseCurrency}&to=${secondaryCurrency}`);
+    request.then((response)=>{
+      if(response.ok)
+        return response.json();
+    }).then((data)=>{
+      this.setState({
+        historicalRates : data.rates
+      });
+
+      const chartLabels = Object.keys(data.rates);
+      const chartData = Object.values(data.rates).map(rate => rate[this.state.secondaryCurrency]);
+      const chartLabel = `${this.state.baseCurrency}/${this.state.secondaryCurrency}`;
+      this.buildChart(chartLabels, chartData, chartLabel);
+    });
+  }
+
+  buildChart(labels, data, label)
+  {
+    const chartRef = this.chartRef.current.getContext("2d");
+
+    if (typeof this.chart !== "undefined") {
+      this.chart.destroy();
+    }
+
+    this.chart = new Chart(this.chartRef.current.getContext("2d"), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: label,
+            data,
+            fill: false,
+            tension: 0,
+            backgroundColor: 'rgb(255, 195, 11)',
+            borderColor: 'rgb(255, 195, 11)'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+      }
+    });
+
+  }
+
   render(){
     return (
       <section className="container">
@@ -176,12 +230,9 @@ class CurrencyConverter extends React.Component{
                   1 {this.state.secondaryCurrency} = {1 / this.state.exchangeRate} {this.state.baseCurrency}
                 </div>
               </div>
-
-              {/* <div className="col-12 col-md-6 align-self-center mt-3 mt-md-0">
-                <button type="button" className="btn btn-warning" name="convert" >Convert</button>
-              </div> */}
             </div>
           </form>
+          <canvas ref={this.chartRef} />
         </div>
       </section>
     );
