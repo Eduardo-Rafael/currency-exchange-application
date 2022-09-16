@@ -17,7 +17,7 @@ function App() {
         <Route path="/currency-converter" exact component={CurrencyConverter} />
         <Route path="/exchange-rate-list" exact component={ExchangeRateList}/>
       </Switch>
-      <Footer />
+      {/* <Footer /> */}
     </Router>
   );
 }
